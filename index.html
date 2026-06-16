@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>兔的小工具箱 - 酒馆正则编辑器</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif;
+  background: #F5F5F7;
+  color: #1D1D1F;
+  padding: 20px 16px 60px;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.header p {
+  font-size: 17px;
+  color: #86868B;
+  font-weight: 400;
+}
+
+.mode-switch {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 6px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+  color: #86868B;
+}
+
+.mode-btn.active {
+  background: #1D1D1F;
+  color: #fff;
+}
+
+.card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #1D1D1F;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 15px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.step-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.step-desc {
+  font-size: 15px;
+  color: #86868B;
+  margin-bottom: 20px;
+  margin-left: 44px;
+}
+
+.upload-area {
+  border: 3px dashed #E5E5EA;
+  border-radius: 14px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #FAFAFA;
+}
+
+.upload-area:hover {
+  border-color: #1D1D1F;
+  background: #fff;
+}
+
+.upload-area.dragover {
+  border-color: #1D1D1F;
+  background: #F0F0F0;
+}
+
+.upload-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.upload-text {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.upload-hint {
+  font-size: 14px;
+  color: #86868B;
+}
+
+textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 14px;
+  border: 2px solid #E5E5EA;
+  border-radius: 14px;
+  font-size: 14px;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #FAFAFA;
+}
+
+textarea:focus {
+  border-color: #1D1D1F;
+  background: #fff;
+}
+
+.btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  letter-spacing: -0.2px;
+}
+
+.btn-primary {
+  background: #1D1D1F;
+  color: #fff;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+  background: #000;
+}
+
+.btn-secondary {
+  background: #F5F5F7;
+  color: #1D1D1F;
+  margin-top: 12px;
+  border: 2px solid #E5E5EA;
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+  background: #E5E5EA;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.form-section {
+  display: none;
+}
+
+.form-section.active {
+  display: block;
+}
+
+.section-block {
+  border: 2px solid #E5E5EA;
+  border-radius: 14px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  background: #FAFAFA;
+}
+
+.section-header {
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  background: #fff;
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.section-header:active {
+  background: #F5F5F7;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.section-toggle {
+  font-size: 20px;
+  color: #86868B;
+  transition: transform 0.25s;
+}
+
+.section-block.open .section-toggle {
+  transform: rotate(180deg);
+}
+
+.section-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background: #fff;
+}
+
+.section-block.open .section-content {
+  max-height: 10000px;
+}
+
+.section-inner {
+  padding: 4px 20px 20px;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group-pair {
+  background: #F5F5F7;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #E5E5EA;
+  position: relative;
+}
+
+.form-group-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1D1D1F;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #E5E5EA;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.delete-btn {
+  background: #fff0f0;
+  color: #c33;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.delete-btn:active {
+  transform: scale(0.95);
+  background: #ffe0e0;
+}
+
+.add-btn {
+  width: 100%;
+  padding: 12px;
+  background: #1D1D1F;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 12px;
+}
+
+.add-btn:active {
+  transform: scale(0.98);
+  background: #000;
+}
+
+.form-label {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #1D1D1F;
+  letter-spacing: -0.1px;
+}
+
+.form-input, .form-textarea {
+  width: 100%;
+  padding: 13px 14px;
+  border: 2px solid #E5E5EA;
+  border-radius: 12px;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.2s;
+  font-family: inherit;
+  background: #FAFAFA;
+}
+
+.form-input:focus, .form-textarea:focus {
+  border-color: #1D1D1F;
+  background: #fff;
+}
+
+.form-textarea {
+  min-height: 80px;
+  resize: vertical;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  font-size: 14px;
+}
+
+.success-msg {
+  display: none;
+  background: #1D1D1F;
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 12px;
+  margin-top: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.success-msg.show {
+  display: block;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.info-badge {
+  display: inline-block;
+  background: #F5F5F7;
+  color: #1D1D1F;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin: 4px 6px 4px 0;
+  border: 1px solid #E5E5EA;
+}
+
+.regex-info {
+  background: #FAFAFA;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #E5E5EA;
+}
+
+.regex-info-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #1D1D1F;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.preview-area {
+  background: #FAFAFA;
+  border: 2px solid #E5E5EA;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  min-height: 100px;
+}
+
+.preview-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #86868B;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tab-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  background: #F5F5F7;
+  padding: 6px;
+  border-radius: 12px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+  color: #86868B;
+}
+
+.tab-btn.active {
+  background: #fff;
+  color: #1D1D1F;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.placeholder-hint {
+  font-size: 12px;
+  color: #C2410C;
+  background: #FFF7ED;
+  border: 1px solid #FED7AA;
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* —— toast 顶部提示 —— */
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-80px);
+  background: #1D1D1F;
+  color: #fff;
+  padding: 14px 24px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  z-index: 9999;
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.34,1.4,0.64,1), opacity 0.3s;
+  pointer-events: none;
+}
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* —— 全部展开/折叠 按钮 —— */
+.expand-all-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.expand-all-bar button {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #E5E5EA;
+  border-radius: 10px;
+  background: #fff;
+  color: #1D1D1F;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.expand-all-bar button:active {
+  transform: scale(0.98);
+  background: #F5F5F7;
+}
+
+/* —— 悬浮智能按钮：预览 / 回去编辑 来回切 —— */
+.preview-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 24px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #1D1D1F;
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.28);
+  cursor: pointer;
+  z-index: 9998;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+  transition: transform 0.15s, opacity 0.25s, background 0.2s;
+}
+.preview-fab span {
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.preview-fab.show {
+  display: flex;
+}
+.preview-fab:active {
+  transform: scale(0.92);
+}
+/* 处于"回去编辑"状态时换个浅色，方便区分 */
+.preview-fab.back-mode {
+  background: #fff;
+  color: #1D1D1F;
+  border: 2px solid #E5E5EA;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+}
+
+</style>
+</head>
+<body>
+
+<div class="toast" id="globalToast"></div>
+
+<button class="preview-fab" id="previewFab" onclick="toggleFab()" aria-label="预览或回去编辑">
+  🐰<span>预览</span>
+</button>
+
+<div class="container">
+  <div class="header">
+    <h1>兔的小工具箱</h1>
+    <p>酒馆正则 & HTML配置一键替换</p>
+  </div>
+
+  <div class="mode-switch">
+    <button class="mode-btn active" onclick="switchMode('regex')" id="regexModeBtn">
+      🎯 酒馆正则模式
+    </button>
+    <button class="mode-btn" onclick="switchMode('html')" id="htmlModeBtn">
+      🔧 HTML替换模式
+    </button>
+  </div>
+
+  <div id="regexMode">
+    <div class="card" id="regexUploadCard">
+      <div class="step-header">
+        <span class="step-num">1</span>
+        <span class="step-title">导入正则JSON</span>
+      </div>
+      <div class="step-desc">从酒馆导出的正则文件（.json格式）</div>
+
+      <div class="upload-area" id="regexUploadArea" onclick="document.getElementById('regexFileInput').click()">
+        <div class="upload-icon">📁</div>
+        <div class="upload-text">点击选择文件或拖拽到这里</div>
+        <div class="upload-hint">支持 .json 格式</div>
+      </div>
+      <input type="file" id="regexFileInput" accept=".json" onchange="handleRegexFile(event)">
+    </div>
+
+    <div class="card form-section" id="regexEditCard">
+      <div class="step-header">
+        <span class="step-num">2</span>
+        <span class="step-title">编辑配置</span>
+      </div>
+      <div class="step-desc">修改 replaceString 里的配置内容</div>
+
+      <div class="regex-info" id="regexInfoDisplay"></div>
+
+      <div class="tab-group">
+        <button class="tab-btn active" onclick="switchRegexTab('edit')">✏️ 编辑配置</button>
+        <button class="tab-btn" onclick="switchRegexTab('preview')">👁️ 预览效果</button>
+      </div>
+
+      <div class="tab-content active" id="regexEditTab">
+        <div id="regexFormFields"></div>
+      </div>
+
+      <div class="tab-content" id="regexPreviewTab">
+        <div class="preview-title">实时预览</div>
+        <div class="preview-area" id="regexPreviewArea"></div>
+      </div>
+
+      <button class="btn btn-primary" onclick="generateRegexJson()">生成新JSON</button>
+    </div>
+
+    <div class="card form-section" id="regexOutputCard">
+      <div class="step-header">
+        <span class="step-num">3</span>
+        <span class="step-title">下载正则JSON</span>
+      </div>
+      <div class="step-desc">可以直接导入酒馆使用</div>
+      <button class="btn btn-primary" onclick="downloadRegexJson()">📥 下载 JSON 文件</button>
+      <button class="btn btn-secondary" onclick="resetRegex()">重新开始</button>
+      <div class="success-msg" id="regexSuccessMsg">JSON 已生成！</div>
+    </div>
+  </div>
+
+  <div id="htmlMode" style="display: none;">
+    <div class="card">
+      <div class="step-header">
+        <span class="step-num">1</span>
+        <span class="step-title">粘贴代码</span>
+      </div>
+
+      <div class="step-desc">把完整的HTML代码粘贴到下方，也可以直接拖拽 .html / .txt 文件进来</div>
+      <textarea id="inputCode" placeholder="粘贴你的完整HTML代码，或拖文件进来..."></textarea>
+      <button class="btn btn-primary" onclick="parseCode()">解析配置</button>
+    </div>
+
+    <div class="card form-section" id="formSection">
+      <div class="step-header">
+        <span class="step-num">2</span>
+        <span class="step-title">编辑配置</span>
+      </div>
+      <div class="step-desc">修改你想要替换的内容</div>
+
+      <div class="tab-group">
+        <button class="tab-btn active" onclick="switchHtmlTab('edit')">✏️ 编辑配置</button>
+        <button class="tab-btn" onclick="switchHtmlTab('preview')">👁️ 预览效果</button>
+      </div>
+
+      <div class="tab-content active" id="htmlEditTab">
+        <div id="formFields"></div>
+      </div>
+
+      <div class="tab-content" id="htmlPreviewTab">
+        <div class="preview-title">实时预览</div>
+        <div class="preview-area" id="htmlPreviewArea"></div>
+      </div>
+
+      <button class="btn btn-primary" onclick="generateCode()">生成新代码</button>
+    </div>
+
+
+    <div class="card form-section" id="outputSection">
+      <div class="step-header">
+        <span class="step-num">3</span>
+        <span class="step-title">复制代码</span>
+      </div>
+      <div class="step-desc">配置已更新，点击复制完整代码</div>
+
+<iframe id="previewFrame" style="width:100%;height:500px;border:2px solid #E5E5EA;border-radius:12px;margin-bottom:16px;background:#fff;"></iframe>
+
+      <button class="btn btn-primary" onclick="copyCode()">一键复制</button>
+      <button class="btn btn-secondary" onclick="reset()">重新开始</button>
+      <div class="success-msg" id="successMsg">复制成功</div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentMode = 'regex';
+let regexData = null;
+let regexOriginalHtml = '';
+let regexParsedConfig = {};
+let regexGeneratedJson = '';
+let configVarName = '';
+let configType = '';
+
+let originalCode = '';
+let parsedConfig = {};
+let generatedCode = '';
+
+function switchMode(mode) {
+  currentMode = mode;
+  if (mode === 'regex') {
+    document.getElementById('regexMode').style.display = 'block';
+    document.getElementById('htmlMode').style.display = 'none';
+    document.getElementById('regexModeBtn').classList.add('active');
+    document.getElementById('htmlModeBtn').classList.remove('active');
+  } else {
+    document.getElementById('regexMode').style.display = 'none';
+    document.getElementById('htmlMode').style.display = 'block';
+    document.getElementById('regexModeBtn').classList.remove('active');
+    document.getElementById('htmlModeBtn').classList.add('active');
+  }
+}
+
+const regexUploadArea = document.getElementById('regexUploadArea');
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+  regexUploadArea.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+  e.preventDefault();
+  e.stopPropagation();
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+  regexUploadArea.addEventListener(eventName, () => {
+    regexUploadArea.classList.add('dragover');
+  }, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+  regexUploadArea.addEventListener(eventName, () => {
+    regexUploadArea.classList.remove('dragover');
+  }, false);
+});
+
+regexUploadArea.addEventListener('drop', (e) => {
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    handleRegexFileContent(files[0]);
+  }
+}, false);
+
+function handleRegexFile(event) {
+  const file = event.target.files[0];
+  if (file) {
+    handleRegexFileContent(file);
+  }
+}
+
+function handleRegexFileContent(file) {
+  if (!file.name.endsWith('.json')) {
+    alert('请选择 .json 文件');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      regexData = JSON.parse(e.target.result);
+      if (!regexData.findRegex || regexData.replaceString === undefined) {
+        alert('这不是有效的酒馆正则格式');
+        return;
+      }
+      regexOriginalHtml = regexData.replaceString;
+      parseRegexData();
+      displayRegexInfo();
+      if (regexParsedConfig && Object.keys(regexParsedConfig).length > 0) {
+        generateRegexForm();
+      } else {
+        alert('replaceString 里没有找到 window.CONFIG，无法解析配置');
+        return;
+      }
+document.getElementById('regexEditCard').classList.add('active');
+      document.getElementById('regexEditCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      saveDraft();   // ✅ 导入成功就存草稿
+    } catch (err) {
+      alert('JSON 解析失败: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// 解析前清理常见的"手滑坑"：中文引号、全角符号等
+function sanitizeConfigCode(code) {
+  return code
+    .replace(/[\u201c\u201d]/g, '"')   // 中文双引号 “ ” → "
+    .replace(/[\u2018\u2019]/g, "'")   // 中文单引号 ‘ ’ → '
+    .replace(/\uff1a/g, ':')           // 全角冒号 ： → :
+    .replace(/\uff0c/g, ',')           // 全角逗号 ， → ,
+    .replace(/\u3000/g, ' ');          // 全角空格 → 普通空格
+}
+
+function parseRegexData() {
+  const replaceStr = regexData.replaceString;
+  const configMatch = replaceStr.match(/window\.(\w*CONFIG)\s*=\s*(\{[\s\S]*?\n\}\s*;)/);
+  if (configMatch) {
+    try {
+      let configCode = configMatch[2].replace(/\}\s*;$/, '}');
+      configCode = sanitizeConfigCode(configCode);   // ✅ 先清理常见坑
+      regexParsedConfig = eval('(' + configCode + ')');
+      configVarName = configMatch[1];
+      if (regexParsedConfig.episodes && Array.isArray(regexParsedConfig.episodes)) {
+        configType = 'podcast';
+      } else if (regexParsedConfig.stories || regexParsedConfig.post) {
+        configType = 'instagram';
+      } else {
+        configType = 'instagram';
+      }
+    } catch (e) {
+      regexParsedConfig = {};
+      console.error('配置解析失败:', e);
+      // ✅ 明确告诉你大概啥问题
+      alert('配置解析失败：' + e.message +
+        '\n\n常见原因：配置里有中文标点、引号没成对、或多了/少了逗号。\n可以按 F12 看控制台定位具体位置。');
+    }
+  } else {
+    regexParsedConfig = {};
+  }
+}
+
+
+function displayRegexInfo() {
+  const infoDiv = document.getElementById('regexInfoDisplay');
+  let html = '<div class="regex-info-title">📋 正则信息</div>';
+  html += `<div><strong>名称:</strong> ${regexData.scriptName || '未命名'}</div>`;
+  html += '<div style="margin-top: 8px;">';
+  html += `<span class="info-badge">${regexData.disabled ? '❌ 已禁用' : '✅ 已启用'}</span>`;
+  html += `<span class="info-badge">${regexData.markdownOnly ? '📝 仅Markdown' : '🌐 全部'}</span>`;
+  html += `<span class="info-badge">${regexData.runOnEdit ? '⚡ 编辑时运行' : '💬 发送时运行'}</span>`;
+  if (regexData.minDepth !== null && regexData.minDepth !== undefined) {
+    html += `<span class="info-badge">最小深度: ${regexData.minDepth}</span>`;
+  }
+  if (regexData.maxDepth !== null && regexData.maxDepth !== undefined) {
+    html += `<span class="info-badge">最大深度: ${regexData.maxDepth}</span>`;
+  }
+  html += '</div>';
+  infoDiv.innerHTML = html;
+}
+
+function switchRegexTab(tab) {
+  const tabs = document.querySelectorAll('#regexEditCard .tab-btn');
+  const contents = document.querySelectorAll('#regexEditCard .tab-content');
+  tabs.forEach(t => t.classList.remove('active'));
+  contents.forEach(c => c.classList.remove('active'));
+  if (tab === 'edit') {
+    tabs[0].classList.add('active');
+    document.getElementById('regexEditTab').classList.add('active');
+  } else {
+    tabs[1].classList.add('active');
+    document.getElementById('regexPreviewTab').classList.add('active');
+    updateRegexPreview();
+  }
+}
+
+function normalizeColor(v) {
+  v = String(v == null ? '' : v).trim();
+  if (!v) return '';
+  // 没带 # 且是 3 位或 6 位十六进制，就补上 #
+  if (v[0] !== '#' && /^([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)) {
+    v = '#' + v;
+  }
+  return v;
+}
+
+function isColorKey(key) {
+  // bubble 的 4 个都以 Color 结尾，theme 这两个单独列
+  return /Color$/.test(key) || key === 'theme.headBg' || key === 'theme.accent';
+}
+
+
+function collectConfig(baseConfig, scope) {
+  const newConfig = JSON.parse(JSON.stringify(baseConfig));
+
+
+  if (newConfig.stories) newConfig.stories = [];
+  if (newConfig.post && newConfig.post.images) newConfig.post.images = [];
+
+  if (newConfig.episodes) newConfig.episodes = [];
+  if (newConfig.reviews) newConfig.reviews = [];
+
+
+  scope.querySelectorAll('[data-key]').forEach(input => {
+    const key = input.dataset.key;
+    const value = input.value.trim();
+
+    if (key.startsWith('stories[')) {
+      const match = key.match(/stories\[(\d+)\]\.(img|name)/);
+      if (match) {
+        const idx = parseInt(match[1]);
+        const field = match[2];
+        if (!newConfig.stories[idx]) {
+          newConfig.stories[idx] = { img: '', name: '' };
+        }
+        newConfig.stories[idx][field] = value;
+      }
+      return;
+    }
+
+    if (key.startsWith('post.images[')) {
+      const match = key.match(/post\.images\[(\d+)\]/);
+      if (match) {
+        const idx = parseInt(match[1]);
+        if (value) {
+          newConfig.post.images[idx] = value;
+        }
+      }
+      return;
+    }
+
+    if (key.startsWith('episodes[')) {
+      const match = key.match(/episodes\[(\d+)\]\.(num|title|desc|thumb|duration)/);
+      if (match) {
+        const idx = parseInt(match[1]);
+        const field = match[2];
+        if (!newConfig.episodes[idx]) {
+          newConfig.episodes[idx] = { num: '', title: '', desc: '', thumb: '', duration: '' };
+        }
+        newConfig.episodes[idx][field] = value;
+      }
+      return;
+    }
+
+    if (key.startsWith('reviews[')) {
+      const match = key.match(/reviews\[(\d+)\]\.(title|time|stars|user|body)/);
+      if (match) {
+        const idx = parseInt(match[1]);
+        const field = match[2];
+        if (!newConfig.reviews[idx]) {
+          newConfig.reviews[idx] = { title: '', time: '', stars: 0, user: '', body: '' };
+        }
+        newConfig.reviews[idx][field] = field === 'stars' ? (Number(value) || 0) : value;
+      }
+      return;
+    }
+
+
+    const keys = key.split(/[\.\[\]]/).filter(k => k);
+    let target = newConfig;
+    for (let i = 0; i < keys.length - 1; i++) {
+      const k = keys[i];
+      if (!target[k]) target[k] = isNaN(keys[i + 1]) ? {} : [];
+      target = target[k];
+    }
+
+const lastKey = keys[keys.length - 1];
+if (isColorKey(key)) {
+  target[lastKey] = normalizeColor(value);   // 颜色优先处理，自动补 #
+} else if (!isNaN(value) && value !== '') {
+  target[lastKey] = Number(value);
+} else {
+  target[lastKey] = value;
+}
+  });   // ✅ 补回这一行，关掉 forEach 循环
+
+if (newConfig.post && newConfig.post.images) {
+    newConfig.post.images = newConfig.post.images.filter(img => img && img.trim());
+  }
+  if (newConfig.stories) {
+    newConfig.stories = newConfig.stories.filter(s => s && (s.img || s.name));
+  }
+  if (newConfig.episodes) {
+    newConfig.episodes = newConfig.episodes.filter(ep => ep && (ep.num || ep.title));
+  }
+  if (newConfig.reviews) {
+    newConfig.reviews = newConfig.reviews.filter(r => r && (r.title || r.body));
+  }
+
+if (newConfig.bubble) {
+  // 补 # 已经在上面统一做了，这里只清理空字段
+  Object.keys(newConfig.bubble).forEach(k => {
+    const v = newConfig.bubble[k];
+    if (!v || (typeof v === 'string' && v.trim() === '')) {
+      delete newConfig.bubble[k];
+    }
+  });
+  if (Object.keys(newConfig.bubble).length === 0) {
+    delete newConfig.bubble;
+  }
+}
+
+
+  return newConfig;
+}
+
+function buildConfigStr(config) {
+  // 先转成 JSON 字符串
+  let jsonStr = JSON.stringify(config, null, 2);
+  
+  // 去掉属性名的引号
+  jsonStr = jsonStr.replace(/"(\w+)":/g, '$1:');
+  
+  // 把包含占位符 $ 的字符串改成反引号
+  jsonStr = jsonStr.replace(/: "([^"]*\$[^"]*)"/g, (match, content) => {
+    // 如果内容里有 $1/$2 等占位符，用反引号
+    return ": `" + content + "`";
+  });
+  
+  // 其他普通字符串用单引号
+  jsonStr = jsonStr.replace(/: "([^"]*)"/g, ": '$1'");
+  
+  return 'window.' + configVarName + ' = ' + jsonStr + ';';
+}
+
+function updateRegexPreview() {
+  const newConfig = collectConfig(regexParsedConfig, document.getElementById('regexFormFields'));
+  const configStr = buildConfigStr(newConfig);
+  let previewHtml = regexOriginalHtml.replace(
+    new RegExp('window\\.' + configVarName + '\\s*=\\s*\\{[\\s\\S]*?\\n\\}\\s*;'),
+    configStr
+  );
+
+  previewHtml = replacePlaceholders(previewHtml);
+  previewHtml = injectAutoOpen(previewHtml);
+
+  document.getElementById('regexPreviewArea').innerHTML =
+    '<iframe srcdoc="' + previewHtml.replace(/"/g, '&quot;') +
+    '" style="width:100%;height:500px;border:none;border-radius:8px;"></iframe>';
+}
+
+
+function generateRegexForm() {
+  buildForm(document.getElementById('regexFormFields'), regexParsedConfig);
+}
+
+function generateRegexJson() {
+  const newConfig = collectConfig(regexParsedConfig, document.getElementById('regexFormFields'));
+  const configStr = buildConfigStr(newConfig);
+  regexData.replaceString = regexOriginalHtml.replace(
+    new RegExp('window\\.' + configVarName + '\\s*=\\s*\\{[\\s\\S]*?\\n\\}\\s*;'),
+    configStr
+  );
+  regexGeneratedJson = JSON.stringify(regexData, null, 2);
+  document.getElementById('regexOutputCard').classList.add('active');
+  document.getElementById('regexOutputCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const msg = document.getElementById('regexSuccessMsg');
+  msg.classList.add('show');
+  setTimeout(() => msg.classList.remove('show'), 2000);
+}
+
+function downloadRegexJson() {
+  const blob = new Blob([regexGeneratedJson], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const filename = (regexData.scriptName || 'regex').replace(/[^a-zA-Z0-9\u4e00-\u9fa5_\-\[\]【】]/g, '_') + '.json';
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function resetRegex() {
+  regexData = null;
+  regexOriginalHtml = '';
+  regexParsedConfig = {};
+  regexGeneratedJson = '';
+  configVarName = '';
+  configType = '';
+  document.getElementById('regexFileInput').value = '';
+  document.getElementById('regexEditCard').classList.remove('active');
+  document.getElementById('regexOutputCard').classList.remove('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+localStorage.removeItem(DRAFT_KEY);
+
+}
+
+const FIELD_LABELS = {
+  bannerSubtitle: '通知副标题',
+  bannerTime: '通知时间',
+  followSince: 'DM关注时间',
+  avatar: '主页头像', username: '用户 ID', charName: '显示昵称',
+  posts: '帖子数', followers: '粉丝数', following: '关注数',
+  bio: '个人简介', discord: 'Discord 链接', threads: 'Threads 用户名',
+  hl0img: '快拍1 - 图片', hl0label: '快拍1 - 文字',
+  hl1img: '快拍2 - 图片', hl1label: '快拍2 - 文字',
+  hl2img: '快拍3 - 图片', hl2label: '快拍3 - 文字',
+  hl3img: '快拍4 - 图片', hl3label: '快拍4 - 文字',
+  hl4img: '快拍5 - 图片', hl4label: '快拍5 - 文字',
+  stories: '推荐页快拍列表', post: '推荐页帖子内容',
+  likesBase: '点赞基数', comments: '评论数', reposts: '转发数', shares: '分享数',
+  images: '帖子图片', cover: '播客封面', title: '播客标题', author: '主持人/作者',
+  aboutText: '播客简介', rating: '评分', ratingCount: '评分人数', category: '分类',
+  episodes: '单集列表', info: '播客信息', aboutAuthor: '关于作者',
+  creator: '创作者', episodeCount: '单集数', copyright: '版权', website: '网站',
+ 'bubble.meColor': '我的气泡背景色',
+  'bubble.themColor': 'TA的气泡背景色',
+  'bubble.meTextColor': '我的气泡文字颜色',
+  'bubble.themTextColor': 'TA的气泡文字颜色'
+
+};
+
+const IG_SECTIONS = {
+  banner: { 
+    title: '🔔 通知横幅', 
+    keys: ['bannerSubtitle', 'bannerTime']
+},
+  profile: { title: '📱 主页基本信息', keys: ['avatar', 'username', 'charName', 'posts', 'followers', 'following'] },
+  bio: { title: '✍️ 个人简介区', keys: ['bio', 'discord', 'threads'] },
+  highlights: { title: '✨ 快拍高光（5个圈圈）', keys: ['hl0img', 'hl0label', 'hl1img', 'hl1label', 'hl2img', 'hl2label', 'hl3img', 'hl3label', 'hl4img', 'hl4label'], grouped: true },
+  grid: { title: '🔳 九宫格默认图片（9格）', keys: ['grid0','grid1','grid2','grid3','grid4','grid5','grid6','grid7','grid8'], isGrid: true },
+  feedStories: { title: '🎬 推荐页快拍栏', keys: ['stories'] },
+  feedPost: { title: '📮 推荐页帖子', keys: ['post'] },
+  dmInfo: { title: '💬 DM 关注信息', keys: ['followSince'] },
+  bubble: { title: '💬 DM 气泡颜色', keys: ['bubble'] }
+};
+
+
+
+const PODCAST_SECTIONS = {
+  basic: { title: '🎙️ 基本信息', keys: ['cover', 'title', 'author', 'aboutText'] },
+  theme: { title: '🎨 主题颜色', keys: ['theme'] },
+  rating: { title: '⭐ 评分信息', keys: ['rating', 'ratingCount', 'category'] },
+  episodes: { title: '🎧 单集列表', keys: ['episodes'] },
+  reviews: { title: '💬 评论列表', keys: ['reviews'] },
+  info: { title: 'ℹ️ 播客信息', keys: ['info'] },
+  about: { title: '👤 关于作者', keys: ['aboutAuthor'] }
+};
+
+function parseCode() {
+  const input = document.getElementById('inputCode').value.trim();
+  if (!input) {
+    alert('请先粘贴代码');
+    return;
+  }
+  const configMatch = input.match(/window\.(\w*CONFIG)\s*=\s*(\{[\s\S]*?\n\}\s*;)/);
+  if (!configMatch) {
+    alert('未找到配置区（需要 window.CONFIG 格式）');
+    return;
+  }
+  originalCode = input;
+  configVarName = configMatch[1];
+  try {
+let configCode = configMatch[2].replace(/\}\s*;$/, '}');
+    configCode = sanitizeConfigCode(configCode);   // ✅ 先清理
+    parsedConfig = eval('(' + configCode + ')');
+    if (parsedConfig.episodes && Array.isArray(parsedConfig.episodes)) {
+      configType = 'podcast';
+    } else if (parsedConfig.stories || parsedConfig.post) {
+      configType = 'instagram';
+    } else {
+      configType = 'instagram';
+    }
+    buildForm(document.getElementById('formFields'), parsedConfig);
+    document.getElementById('formSection').classList.add('active');
+    document.getElementById('formSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {
+    alert('配置解析失败: ' + e.message);
+    console.error(e);
+  }
+}
+
+function buildForm(container, config) {
+  container.innerHTML = '';
+// 全部展开/折叠工具栏
+  const bar = document.createElement('div');
+  bar.className = 'expand-all-bar';
+  bar.innerHTML =
+    '<button type="button" data-act="open">全部展开</button>' +
+    '<button type="button" data-act="close">全部折叠</button>';
+  bar.querySelector('[data-act=open]').onclick = () =>
+    container.querySelectorAll('.section-block').forEach(b => b.classList.add('open'));
+  bar.querySelector('[data-act=close]').onclick = () =>
+    container.querySelectorAll('.section-block').forEach(b => b.classList.remove('open'));
+  container.appendChild(bar);
+  const SECTIONS = configType === 'podcast' ? PODCAST_SECTIONS : IG_SECTIONS;
+
+  Object.keys(SECTIONS).forEach(sectionKey => {
+    const section = SECTIONS[sectionKey];
+const block = document.createElement('div');
+    block.className = 'section-block';
+    if (Object.keys(SECTIONS).indexOf(sectionKey) === 0) block.classList.add('open');
+
+    const header = document.createElement('div');
+    header.className = 'section-header';
+    header.innerHTML = `<span class="section-title">${section.title}</span><span class="section-toggle">⌄</span>`;
+
+    const content = document.createElement('div');
+    content.className = 'section-content';
+    const inner = document.createElement('div');
+    inner.className = 'section-inner';
+
+    if (section.grouped && sectionKey === 'highlights') {
+      for (let i = 0; i < 5; i++) {
+        const pair = document.createElement('div');
+        pair.className = 'form-group-pair';
+        const pairHeader = document.createElement('div');
+        pairHeader.className = 'form-group-header';
+        pairHeader.textContent = `快拍 ${i + 1}`;
+        pair.appendChild(pairHeader);
+        pair.appendChild(createFormGroup(`hl${i}img`, '图片链接', 'text', config[`hl${i}img`]));
+        pair.appendChild(createFormGroup(`hl${i}label`, '显示文字', 'text', config[`hl${i}label`]));
+        inner.appendChild(pair);
+      }
+
+    } else if (sectionKey === 'grid') {
+      for (let i = 0; i < 9; i++) {
+        inner.appendChild(createFormGroup('grid' + i, `第 ${i + 1} 格图片链接（留空就是空白格子）`, 'text', config['grid' + i]));
+      }
+
+    } else if (configType === 'instagram' && sectionKey === 'feedStories') {
+      const storiesContainer = document.createElement('div');
+      storiesContainer.id = 'storiesContainer';
+      (config.stories || []).forEach((story, idx) => {
+        storiesContainer.appendChild(createStoryItem(story, idx));
+      });
+      inner.appendChild(storiesContainer);
+      const addStoryBtn = document.createElement('button');
+      addStoryBtn.className = 'add-btn';
+      addStoryBtn.textContent = '➕ 添加快拍';
+      addStoryBtn.onclick = () => addStoryItem();
+      inner.appendChild(addStoryBtn);
+    } else if (configType === 'instagram' && sectionKey === 'feedPost') {
+      const post = config.post || {};
+      inner.appendChild(createFormGroup('post.avatar', '帖子头像', 'text', post.avatar));
+      inner.appendChild(createFormGroup('post.username', '用户名', 'text', post.username));
+      const imgPair = document.createElement('div');
+      imgPair.className = 'form-group-pair';
+      imgPair.style.padding = '12px';
+      const imgHeader = document.createElement('div');
+      imgHeader.className = 'form-group-header';
+      imgHeader.textContent = '帖子图片';
+      imgPair.appendChild(imgHeader);
+      const imgList = document.createElement('div');
+      imgList.id = 'imagesList';
+      (post.images || []).forEach((img, idx) => {
+        imgList.appendChild(createImageItem(img, idx));
+      });
+      imgPair.appendChild(imgList);
+      const addImgBtn = document.createElement('button');
+      addImgBtn.className = 'add-btn';
+      addImgBtn.textContent = '➕ 添加图片';
+      addImgBtn.onclick = () => addImageItem();
+      imgPair.appendChild(addImgBtn);
+      inner.appendChild(imgPair);
+      inner.appendChild(createFormGroup('post.likesBase', '点赞基数', 'text', post.likesBase));
+      inner.appendChild(createFormGroup('post.comments', '评论数', 'text', post.comments));
+      inner.appendChild(createFormGroup('post.reposts', '转发数', 'text', post.reposts));
+
+      inner.appendChild(createFormGroup('post.shares', '分享数', 'text', post.shares));
+      
+} else if (configType === 'instagram' && sectionKey === 'bubble') {
+  const bubble = config.bubble || {};
+  inner.appendChild(createFormGroup('bubble.meColor', '我的气泡背景色（留空用默认）', 'text', bubble.meColor));
+  inner.appendChild(createFormGroup('bubble.themColor', 'TA的气泡背景色（留空用默认）', 'text', bubble.themColor));
+  inner.appendChild(createFormGroup('bubble.meTextColor', '我的气泡文字颜色（留空用默认）', 'text', bubble.meTextColor));
+  inner.appendChild(createFormGroup('bubble.themTextColor', 'TA的气泡文字颜色（留空用默认）', 'text', bubble.themTextColor));
+  
+} else if (configType === 'podcast' && sectionKey === 'episodes') {
+
+      const episodesContainer = document.createElement('div');
+      episodesContainer.id = 'episodesContainer';
+      (config.episodes || []).forEach((ep, idx) => {
+        episodesContainer.appendChild(createEpisodeItem(ep, idx));
+      });
+      inner.appendChild(episodesContainer);
+      const addEpBtn = document.createElement('button');
+      addEpBtn.className = 'add-btn';
+      addEpBtn.textContent = '➕ 添加单集';
+      addEpBtn.onclick = () => addEpisodeItem();
+      inner.appendChild(addEpBtn);
+
+} else if (configType === 'podcast' && sectionKey === 'reviews') {
+      const reviewsContainer = document.createElement('div');
+      reviewsContainer.id = 'reviewsContainer';
+      (config.reviews || []).forEach((rv, idx) => {
+        reviewsContainer.appendChild(createReviewItem(rv, idx));
+      });
+      inner.appendChild(reviewsContainer);
+      const addRvBtn = document.createElement('button');
+      addRvBtn.className = 'add-btn';
+      addRvBtn.textContent = '➕ 添加评论';
+      addRvBtn.onclick = () => addReviewItem();
+      inner.appendChild(addRvBtn);
+
+    } else if (configType === 'podcast' && sectionKey === 'info') {
+      const info = config.info || {};
+      inner.appendChild(createFormGroup('info.creator', '创作者', 'text', info.creator));
+      inner.appendChild(createFormGroup('info.episodeCount', '单集数', 'text', info.episodeCount));
+      inner.appendChild(createFormGroup('info.rating', '分级', 'text', info.rating));
+      inner.appendChild(createFormGroup('info.copyright', '版权', 'text', info.copyright));
+      inner.appendChild(createFormGroup('info.website', '网站', 'text', info.website));
+
+} else if (configType === 'podcast' && sectionKey === 'theme') {
+  const theme = config.theme || {};
+  inner.appendChild(createFormGroup('theme.headBg', '版头背景色（如 #DADEDC）', 'text', theme.headBg || ''));
+  inner.appendChild(createFormGroup('theme.accent', '主题紫色（如 #6718CF）', 'text', theme.accent || ''));
+
+    } else {
+      section.keys.forEach(key => {
+        if (config[key] !== undefined) {
+          inner.appendChild(createFormGroup(key, FIELD_LABELS[key] || key, inferType(config[key]), config[key]));
+        }
+      });
+    }
+
+    content.appendChild(inner);
+    block.appendChild(header);
+    block.appendChild(content);
+    container.appendChild(block);
+    header.addEventListener('click', () => block.classList.toggle('open'));
+  });
+}
+
+function createEpisodeItem(ep, idx) {
+  const pair = document.createElement('div');
+  pair.className = 'form-group-pair';
+  pair.dataset.episodeIndex = idx;
+  const pairHeader = document.createElement('div');
+  pairHeader.className = 'form-group-header';
+  const title = document.createElement('span');
+  title.textContent = `单集 ${idx + 1}`;
+  pairHeader.appendChild(title);
+  const delBtn = document.createElement('button');
+  delBtn.className = 'delete-btn';
+  delBtn.textContent = '删除';
+  delBtn.onclick = () => deleteEpisodeItem(idx);
+  pairHeader.appendChild(delBtn);
+  pair.appendChild(pairHeader);
+  pair.appendChild(createFormGroup(`episodes[${idx}].num`, '集数标识', 'text', ep.num));
+  pair.appendChild(createFormGroup(`episodes[${idx}].title`, '单集标题', 'text', ep.title));
+  pair.appendChild(createFormGroup(`episodes[${idx}].desc`, '单集简介', 'textarea', ep.desc));
+  pair.appendChild(createFormGroup(`episodes[${idx}].thumb`, '缩略图', 'text', ep.thumb));
+  pair.appendChild(createFormGroup(`episodes[${idx}].duration`, '时长', 'text', ep.duration));
+  return pair;
+}
+
+function getEpisodesContainer() {
+  return document.querySelector('#regexFormFields #episodesContainer') || document.querySelector('#formFields #episodesContainer') || document.getElementById('episodesContainer');
+}
+
+function addEpisodeItem() {
+  const container = getEpisodesContainer();
+  const currentCount = container.querySelectorAll('.form-group-pair').length;
+  container.appendChild(createEpisodeItem({ num: '', title: '', desc: '', thumb: '', duration: '' }, currentCount));
+}
+
+function deleteEpisodeItem(idx) {
+  const container = getEpisodesContainer();
+  const items = container.querySelectorAll('.form-group-pair');
+  if (items.length > 1) {
+    items[idx].remove();
+    container.querySelectorAll('.form-group-pair').forEach((item, newIdx) => {
+      item.dataset.episodeIndex = newIdx;
+      const title = item.querySelector('.form-group-header span');
+      if (title) title.textContent = `单集 ${newIdx + 1}`;
+      item.querySelectorAll('[data-key]').forEach(input => {
+        const field = input.dataset.key.split('.')[1];
+        input.dataset.key = `episodes[${newIdx}].${field}`;
+      });
+    });
+  }
+}
+
+function createReviewItem(rv, idx) {
+  const pair = document.createElement('div');
+  pair.className = 'form-group-pair';
+  pair.dataset.reviewIndex = idx;
+  const pairHeader = document.createElement('div');
+  pairHeader.className = 'form-group-header';
+  const title = document.createElement('span');
+  title.textContent = `评论 ${idx + 1}`;
+  pairHeader.appendChild(title);
+  const delBtn = document.createElement('button');
+  delBtn.className = 'delete-btn';
+  delBtn.textContent = '删除';
+  delBtn.onclick = () => deleteReviewItem(idx);
+  pairHeader.appendChild(delBtn);
+  pair.appendChild(pairHeader);
+  pair.appendChild(createFormGroup(`reviews[${idx}].title`, '评论标题', 'text', rv.title));
+  pair.appendChild(createFormGroup(`reviews[${idx}].time`, '时间', 'text', rv.time));
+  pair.appendChild(createFormGroup(`reviews[${idx}].stars`, '星数（1-5）', 'text', rv.stars));
+  pair.appendChild(createFormGroup(`reviews[${idx}].user`, '用户名', 'text', rv.user));
+  pair.appendChild(createFormGroup(`reviews[${idx}].body`, '评论正文', 'textarea', rv.body));
+  return pair;
+}
+
+function getReviewsContainer() {
+  return document.querySelector('#regexFormFields #reviewsContainer') || document.querySelector('#formFields #reviewsContainer') || document.getElementById('reviewsContainer');
+}
+
+function addReviewItem() {
+  const container = getReviewsContainer();
+  const currentCount = container.querySelectorAll('.form-group-pair').length;
+  container.appendChild(createReviewItem({ title: '', time: '', stars: '', user: '', body: '' }, currentCount));
+}
+
+function deleteReviewItem(idx) {
+  const container = getReviewsContainer();
+  const items = container.querySelectorAll('.form-group-pair');
+  if (items.length > 1) {
+    items[idx].remove();
+    container.querySelectorAll('.form-group-pair').forEach((item, newIdx) => {
+      item.dataset.reviewIndex = newIdx;
+      const title = item.querySelector('.form-group-header span');
+      if (title) title.textContent = `评论 ${newIdx + 1}`;
+      item.querySelectorAll('[data-key]').forEach(input => {
+        const field = input.dataset.key.split('.')[1];
+        input.dataset.key = `reviews[${newIdx}].${field}`;
+      });
+    });
+  }
+}
+
+
+function createStoryItem(story, idx) {
+  const pair = document.createElement('div');
+  pair.className = 'form-group-pair';
+  pair.dataset.storyIndex = idx;
+  const pairHeader = document.createElement('div');
+  pairHeader.className = 'form-group-header';
+  const title = document.createElement('span');
+  title.textContent = idx === 0 ? '你的快拍（第1个）' : `快拍 ${idx + 1}`;
+  pairHeader.appendChild(title);
+  if (idx > 0) {
+    const delBtn = document.createElement('button');
+    delBtn.className = 'delete-btn';
+    delBtn.textContent = '删除';
+    delBtn.onclick = () => deleteStoryItem(idx);
+    pairHeader.appendChild(delBtn);
+  }
+  pair.appendChild(pairHeader);
+  pair.appendChild(createFormGroup(`stories[${idx}].img`, '图片链接', 'text', story.img));
+  pair.appendChild(createFormGroup(`stories[${idx}].name`, '用户名', 'text', story.name));
+  return pair;
+}
+
+function getStoriesContainer() {
+  return document.querySelector('#regexFormFields #storiesContainer') || document.querySelector('#formFields #storiesContainer') || document.getElementById('storiesContainer');
+}
+
+function addStoryItem() {
+  const container = getStoriesContainer();
+  const currentCount = container.querySelectorAll('.form-group-pair').length;
+  container.appendChild(createStoryItem({ img: '', name: '' }, currentCount));
+}
+
+function deleteStoryItem(idx) {
+  const container = getStoriesContainer();
+  const items = container.querySelectorAll('.form-group-pair');
+  if (items.length > 1) {
+    items[idx].remove();
+    container.querySelectorAll('.form-group-pair').forEach((item, newIdx) => {
+      item.dataset.storyIndex = newIdx;
+      const title = item.querySelector('.form-group-header span');
+      if (title) title.textContent = newIdx === 0 ? '你的快拍（第1个）' : `快拍 ${newIdx + 1}`;
+      item.querySelectorAll('[data-key]').forEach(input => {
+        const field = input.dataset.key.split('.')[1];
+        input.dataset.key = `stories[${newIdx}].${field}`;
+      });
+    });
+  }
+}
+
+function createImageItem(img, idx) {
+  const group = document.createElement('div');
+  group.className = 'form-group';
+  group.dataset.imageIndex = idx;
+  group.style.display = 'flex';
+  group.style.gap = '8px';
+  group.style.alignItems = 'flex-end';
+  const wrapper = document.createElement('div');
+  wrapper.style.flex = '1';
+  const label = document.createElement('label');
+  label.className = 'form-label';
+  label.textContent = `图片 ${idx + 1}`;
+  const input = document.createElement('input');
+  input.className = 'form-input';
+  input.type = 'text';
+  input.value = img || '';
+  input.dataset.key = `post.images[${idx}]`;
+  wrapper.appendChild(label);
+  wrapper.appendChild(input);
+  const delBtn = document.createElement('button');
+  delBtn.className = 'delete-btn';
+  delBtn.textContent = '✕';
+  delBtn.style.marginBottom = '0';
+  delBtn.onclick = () => deleteImageItem(idx);
+  group.appendChild(wrapper);
+  group.appendChild(delBtn);
+  return group;
+}
+
+function getImagesList() {
+  return document.querySelector('#regexFormFields #imagesList') || document.querySelector('#formFields #imagesList') || document.getElementById('imagesList');
+}
+
+function addImageItem() {
+  const list = getImagesList();
+  const currentCount = list.querySelectorAll('[data-image-index]').length;
+  list.appendChild(createImageItem('', currentCount));
+}
+
+function deleteImageItem(idx) {
+  const list = getImagesList();
+  const items = list.querySelectorAll('[data-image-index]');
+  if (items.length > 1) {
+    items[idx].remove();
+    list.querySelectorAll('[data-image-index]').forEach((item, newIdx) => {
+      item.dataset.imageIndex = newIdx;
+      const label = item.querySelector('label');
+      if (label) label.textContent = `图片 ${newIdx + 1}`;
+      const input = item.querySelector('input');
+      if (input) input.dataset.key = `post.images[${newIdx}]`;
+    });
+  }
+}
+
+function inferType(value) {
+  if (typeof value === 'string' && value.length > 60) return 'textarea';
+  return 'text';
+}
+
+function createFormGroup(key, label, type, value) {
+  const fg = document.createElement('div');
+  fg.className = 'form-group';
+  const lbl = document.createElement('label');
+  lbl.className = 'form-label';
+  lbl.textContent = label;
+  const input = document.createElement(type === 'textarea' ? 'textarea' : 'input');
+  input.className = type === 'textarea' ? 'form-textarea' : 'form-input';
+  input.dataset.key = key;
+  if (type !== 'textarea') input.type = 'text';
+  input.value = value !== undefined && value !== null ? String(value) : '';
+  fg.appendChild(lbl);
+  fg.appendChild(input);
+
+  // ✅ 检测占位符：值里出现 $1 ~ $9 这种就提示
+  const valStr = String(value || '');
+  const placeholders = valStr.match(/\$\d/g);
+  if (placeholders) {
+    const hint = document.createElement('div');
+    hint.className = 'placeholder-hint';
+    const unique = [...new Set(placeholders)].join(' / ');
+    hint.textContent = `⚠️ 含占位符 ${unique}，会随剧情自动变化，非必要请勿改动哦～`;
+    fg.appendChild(hint);
+  }
+
+  return fg;
+}
+
+
+
+
+const DRAFT_KEY = 'tuToolDraft_v1';
+
+function saveDraft() {
+  try {
+    const draft = { mode: currentMode };
+    const input = document.getElementById('inputCode');
+    if (input) draft.htmlInput = input.value;
+    // ✅ 正则模式：把导入的原始 JSON 也存一份
+    if (regexData) {
+      draft.regexData = regexData;
+    }
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  } catch (e) {}
+}
+
+(function() {
+  const ta = document.getElementById('inputCode');
+  if (!ta) return;
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
+    ta.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+  });
+  ['dragenter', 'dragover'].forEach(ev => {
+    ta.addEventListener(ev, () => { ta.style.borderColor = '#1D1D1F'; });
+  });
+  ['dragleave', 'drop'].forEach(ev => {
+    ta.addEventListener(ev, () => { ta.style.borderColor = ''; });
+  });
+  ta.addEventListener('drop', e => {
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    if (!/\.(html?|txt)$/i.test(file.name)) {
+      showToast('❌ 请拖入 .html 或 .txt 文件');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      ta.value = ev.target.result;
+      showToast('✅ 文件已读取');
+      saveDraft();
+    };
+    reader.readAsText(file);
+  });
+})();
+
+
+function loadDraft() {
+  try {
+    const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}');
+
+    // HTML 模式：恢复粘贴的代码
+    if (draft.htmlInput) {
+      const input = document.getElementById('inputCode');
+      if (input) input.value = draft.htmlInput;
+    }
+
+    // ✅ 正则模式：恢复导入过的 JSON，直接重建编辑界面
+    if (draft.regexData && draft.regexData.findRegex && draft.regexData.replaceString !== undefined) {
+      regexData = draft.regexData;
+      regexOriginalHtml = regexData.replaceString;
+      parseRegexData();
+      displayRegexInfo();
+      if (regexParsedConfig && Object.keys(regexParsedConfig).length > 0) {
+        generateRegexForm();
+        document.getElementById('regexEditCard').classList.add('active');
+      }
+    }
+
+    // 如果上次停在哪个模式，就切回那个模式
+    if (draft.mode) {
+      switchMode(draft.mode);
+    }
+  } catch (e) {}
+}
+
+
+// 页面加载时恢复
+window.addEventListener('load', loadDraft);
+
+// 把预览里的占位符换成示例内容
+function replacePlaceholders(html) {
+  html = html.replace(/\$1/g, '这是状态栏文本示例');
+  html = html.replace(/\$2/g, '这是帖子文案示例～');
+  html = html.replace(/\$3/g, '这是翻译后的文案示例！');
+  html = html.replace(/\$4/g, `
+    <p class="from-them">嗨～今天过得怎么样？</p>
+    <p class="from-me">超好的！刚吃了好吃的🍰</p>
+    <p class="from-them">哇听起来不错呢</p>
+    <p class="from-me">对呀！改天一起去吧～</p>
+  `);
+  html = html.replace(/\$5/g, 'tutuubunny');
+  html = html.replace(/\$6/g, '刚刚');
+  return html;
+}
+
+// 预览时让 IG 面板默认展开（没有面板的播客模板会自动跳过）
+function injectAutoOpen(html) {
+  var script = '<scr' + 'ipt>(function(){var p=document.querySelector(".ig-panel");if(p){p.style.display="block";p.classList.add("open");}})();<\/scr' + 'ipt>';
+  return html.indexOf('</body>') > -1 ? html.replace('</body>', script + '</body>') : html + script;
+}
+
+function generateCode() {
+  const newConfig = collectConfig(parsedConfig, document.getElementById('formFields'));
+  const configStr = buildConfigStr(newConfig);
+  generatedCode = originalCode.replace(
+    new RegExp('window\\.' + configVarName + '\\s*=\\s*\\{[\\s\\S]*?\\n\\}\\s*;'),
+    configStr
+  );
+
+  document.getElementById('outputSection').classList.add('active');
+  document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // 预览用替换过占位符并自动展开的版本，复制仍然用 generatedCode（保留占位符）
+  let previewCode = injectAutoOpen(replacePlaceholders(generatedCode));
+  document.getElementById('previewFrame').srcdoc = previewCode;
+}
+
+
+function switchHtmlTab(tab) {
+  const tabs = document.querySelectorAll('#formSection .tab-btn');
+  const contents = document.querySelectorAll('#formSection .tab-content');
+  tabs.forEach(t => t.classList.remove('active'));
+  contents.forEach(c => c.classList.remove('active'));
+  if (tab === 'edit') {
+    tabs[0].classList.add('active');
+    document.getElementById('htmlEditTab').classList.add('active');
+  } else {
+    tabs[1].classList.add('active');
+    document.getElementById('htmlPreviewTab').classList.add('active');
+    updateHtmlPreview();
+  }
+}
+
+function updateHtmlPreview() {
+  const newConfig = collectConfig(parsedConfig, document.getElementById('formFields'));
+  const configStr = buildConfigStr(newConfig);
+  let previewHtml = originalCode.replace(
+    new RegExp('window\\.' + configVarName + '\\s*=\\s*\\{[\\s\\S]*?\\n\\}\\s*;'),
+    configStr
+  );
+  previewHtml = replacePlaceholders(previewHtml);
+  previewHtml = injectAutoOpen(previewHtml);
+  document.getElementById('htmlPreviewArea').innerHTML =
+    '<iframe srcdoc="' + previewHtml.replace(/"/g, '&quot;') +
+    '" style="width:100%;height:500px;border:none;border-radius:8px;"></iframe>';
+}
+
+function showToast(text) {
+  const t = document.getElementById('globalToast');
+  t.textContent = text;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// 记住点预览前停在哪
+let lastEditScrollY = null;
+// 按钮当前状态：false=预览模式，true=回去编辑模式
+let fabInPreview = false;
+
+// 一个按钮来回切：编辑↔预览
+function toggleFab() {
+  if (!fabInPreview) {
+    jumpToPreview();
+  } else {
+    jumpBack();
+  }
+}
+
+// 切换按钮的图标和样式
+function setFabMode(toPreview) {
+  fabInPreview = toPreview;
+  const fab = document.getElementById('previewFab');
+  if (!fab) return;
+  if (toPreview) {
+    fab.classList.add('back-mode');
+    fab.innerHTML = '✏️<span>编辑</span>';
+  } else {
+    fab.classList.remove('back-mode');
+    fab.innerHTML = '🐰<span>预览</span>';
+  }
+}
+
+// 跳到预览，并让预览内容居中
+function jumpToPreview() {
+  if (currentMode === 'regex') {
+    if (!regexData) { showToast('还没导入正则哦～'); return; }
+    lastEditScrollY = window.scrollY;
+    switchRegexTab('preview');
+    setTimeout(() => {
+      const area = document.getElementById('regexPreviewArea');
+      if (area) area.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 60);
+  } else {
+    if (!originalCode) { showToast('还没解析代码哦～'); return; }
+    lastEditScrollY = window.scrollY;
+    switchHtmlTab('preview');
+    setTimeout(() => {
+      const area = document.getElementById('htmlPreviewArea');
+      if (area) area.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 60);
+  }
+  setFabMode(true);   // 变成"回去编辑"
+}
+
+// 回到刚才点预览前的位置，并切回编辑页签
+function jumpBack() {
+  if (currentMode === 'regex') {
+    switchRegexTab('edit');
+  } else {
+    switchHtmlTab('edit');
+  }
+  setTimeout(() => {
+    if (lastEditScrollY !== null) {
+      window.scrollTo({ top: lastEditScrollY, behavior: 'smooth' });
+    }
+  }, 60);
+  setFabMode(false);  // 变回"预览"
+}
+
+// 有配置可编辑时才显示按钮
+function updateFabVisibility() {
+  const fab = document.getElementById('previewFab');
+  if (!fab) return;
+  const hasContent =
+    (currentMode === 'regex' && regexData) ||
+    (currentMode === 'html' && originalCode);
+  fab.classList.toggle('show', !!hasContent);
+}
+
+setInterval(updateFabVisibility, 600);
+
+
+
+function debounce(fn, delay) {
+  let timer;
+  return function() {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, arguments), delay);
+  };
+}
+
+// 输入时自动刷新当前激活的预览页签
+const autoRefresh = debounce(function() {
+  // 正则模式预览页签开着就刷它
+  const regexPreviewOpen = document.getElementById('regexPreviewTab')
+    && document.getElementById('regexPreviewTab').classList.contains('active');
+  if (regexPreviewOpen && regexData) updateRegexPreview();
+
+  // HTML 模式预览页签开着就刷它
+  const htmlPreviewOpen = document.getElementById('htmlPreviewTab')
+    && document.getElementById('htmlPreviewTab').classList.contains('active');
+  if (htmlPreviewOpen && originalCode) updateHtmlPreview();
+
+  saveDraft(); // 顺便存草稿（见 3-4）
+}, 500);
+
+document.addEventListener('input', function(e) {
+  if (e.target.dataset && e.target.dataset.key !== undefined) {
+    autoRefresh();
+  }
+});
+
+
+function copyCode() {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(generatedCode)
+      .then(() => showToast('✅ 复制成功'))
+      .catch(() => fallbackCopy());
+  } else {
+    fallbackCopy();
+  }
+}
+
+function fallbackCopy() {
+  const temp = document.createElement('textarea');
+  temp.value = generatedCode;
+  temp.style.position = 'fixed';
+  temp.style.opacity = '0';
+  document.body.appendChild(temp);
+  temp.select();
+  try {
+    document.execCommand('copy');
+    showToast('✅ 复制成功');
+  } catch (err) {
+    showToast('❌ 复制失败，请手动复制');
+  }
+  document.body.removeChild(temp);
+}
+
+function reset() {
+  originalCode = '';
+  parsedConfig = {};
+  generatedCode = '';
+  configVarName = '';
+  configType = '';
+  document.getElementById('inputCode').value = '';
+  document.getElementById('formSection').classList.remove('active');
+  document.getElementById('outputSection').classList.remove('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+localStorage.removeItem(DRAFT_KEY);
+}
+</script>
+
+</body>
+</html>
